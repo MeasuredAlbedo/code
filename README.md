@@ -13,7 +13,9 @@
 
 [Dataset Link](https://umd.box.com/s/rzuzf12ooqnaxyojjgam09zctgp8fr2c)
 
-Download and unzip labels to the code folder so that `labels` is at same level as various scripts. `images_png.zip` and `images_raw.zip` are png format images and camera raw format images respectively. `images_raw` will be needed for shading computation. 
+Download and unzip `labels.zip` to the code folder so that `labels` is at same level as various scripts. 
+
+`images_png.zip` and `images_raw.zip` are png format images and camera raw format images respectively. `images_raw` will be needed for shading computation. 
 
 ## Albedo evaluation
 
