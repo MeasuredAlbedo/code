@@ -23,7 +23,7 @@ Download and unzip `labels.zip` to the code folder so that `labels` is at same l
 
 In `utils.py`, change paths in `ALGORITHM_PATHS` to results output by each algorithm, and `IMGS_PATH` to path of MAW images. 
 
-In `run_cmp.py`, update `names` on line 30 to algorithms you want to evaluate. Similarly in `texture_score_lpips.py`, update `names` on line 750 to algothims you want to evaluate.
+In `run_cmp.py`, update `names` on line 30 to algorithms you want to evaluate. Similarly in `texture_score_lpips.py`, update `names` on line 750 to algothims you want to evaluate. (possible `names` are in utils.py starting at line 159.)
 
 ### Evaluation
 
