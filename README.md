@@ -45,6 +45,7 @@ python3 run_cmp.py --meta meta.csv --type=whdr
 To evaluate all algorithms for texture, run:
 
 ```
+python3 texture_score_lpips.py maw --meta meta.csv --imgs_dir <MAW PNG IMG PATH>  --use_gpu
 
 ```
 
