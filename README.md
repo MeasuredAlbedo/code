@@ -68,9 +68,9 @@ python3 run_shading_cmp.py --meta meta.csv --imgs_dir <MAW PNG IMG PATH>
 Unfortunately, we have to remove 14 images from scene_0 as those images reveal personal credit cards. We will consider restore those images by blackout sensitive area.
 
 The way number of scenes are counted in the dataset release is different from the paper. In the dataset release, some `scene` can contain multiple scenes as counted by the paper, as pictures in those `scenes` come from physically separate areas/different rooms. `scene` containing multiple scenes are listed below:
-`<scene_0>`: contains 2 scenes.
-`<scene_2>`: contains 3 scenes.
-`<scene_2>`: contains 2 scenes.
-`<scene_31>`: contains 4 scenes.
-`<scene_34>`: contains 2 scenes.
+* `<scene_0>`: contains 2 scenes.
+* `<scene_2>`: contains 3 scenes.
+* `<scene_2>`: contains 2 scenes.
+* `<scene_31>`: contains 4 scenes.
+* `<scene_34>`: contains 2 scenes.
 
