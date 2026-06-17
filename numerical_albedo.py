@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import cv2
 import pathlib
 import math
-import compute_shading
 
 def scale_for_si_mse(x, y):
     theta = 1/np.maximum(np.sum(x*x), 1e-6)*np.sum(x*y)
@@ -22,9 +21,10 @@ def scale_for_weighted_si_mse(w, x, y):
     return theta
 
 class AlbedoEvaluator:
-    def __init__(self, loss, metric):
+    def __init__(self, loss, metric, write_visualizations=True):
         self.loss = loss
         self.metric = metric
+        self.write_visualizations = write_visualizations
         pass
     def get_scaled_albedo_path(self, p):
         if self.loss == "si":
@@ -54,19 +54,37 @@ class AlbedoEvaluator:
     def evaluate(self, input_path_colors, input_path_masks, pred_albedo, color_space):
         colors = np.array(np.load(input_path_colors))
         if pred_albedo != "baseline_c":
-            albedo_pred = imageio.imread(pred_albedo)
-            albedo_pred = PIL.Image.fromarray(albedo_pred)
-            albedo_pred = albedo_pred.resize((320, 240), resample=PIL.Image.BILINEAR)
-            albedo_pred = np.array(albedo_pred)
-            if color_space == "linear":
-                albedo_pred = (albedolib.lin2srgb(albedo_pred / 255) * 255).round() 
-                pass
-            elif color_space == "ravi":
-                raise NotImplementedError(color_space)
-            elif color_space == "srgb":
-                pass # do nothing
+            if pred_albedo.lower().endswith(".exr"):
+                albedo_pred = cv2.imread(pred_albedo, -1)
+                if albedo_pred is None:
+                    raise FileNotFoundError(pred_albedo)
+                albedo_pred = albedo_pred[:, :, :3]
+                albedo_pred = albedo_pred[:, :, ::-1]
+                albedo_pred = np.clip(albedo_pred, 0, 1.0)
+                if color_space == "linear":
+                    albedo_pred = (albedolib.lin2srgb(albedo_pred) * 255).round()
+                elif color_space == "srgb":
+                    albedo_pred = (albedo_pred * 255).round()
+                else:
+                    raise NotImplementedError(color_space)
+                albedo_pred = albedo_pred.astype(np.uint8)
+                albedo_pred = PIL.Image.fromarray(albedo_pred)
+                albedo_pred = albedo_pred.resize((320, 240), resample=PIL.Image.BILINEAR)
+                albedo_pred = np.array(albedo_pred)
             else:
-                raise NotImplementedError(color_space)
+                albedo_pred = imageio.imread(pred_albedo)
+                albedo_pred = PIL.Image.fromarray(albedo_pred)
+                albedo_pred = albedo_pred.resize((320, 240), resample=PIL.Image.BILINEAR)
+                albedo_pred = np.array(albedo_pred)
+                if color_space == "linear":
+                    albedo_pred = (albedolib.lin2srgb(albedo_pred / 255) * 255).round() 
+                    pass
+                elif color_space == "ravi":
+                    raise NotImplementedError(color_space)
+                elif color_space == "srgb":
+                    pass # do nothing
+                else:
+                    raise NotImplementedError(color_space)
             if len(albedo_pred.shape) == 2:
                 albedo_pred = np.tile(albedo_pred[:, :, np.newaxis], (1, 1, 3))
                 pass
@@ -143,7 +161,7 @@ class AlbedoEvaluator:
                 pass
         else:
             raise NotImplementedError(self.loss)
-        if self.metric != "mean_srgb":
+        if self.write_visualizations and self.metric != "mean_srgb":
             imageio.imwrite(self.get_scaled_albedo_path(pred_albedo), np.round(albedolib.lin2srgb(np.clip(scaled_albedo , 0.0, 1.0))*255).astype(np.uint8), compress_level=1)
             imageio.imwrite(self.get_grayscale_albedo_path(pred_albedo), (albedolib.lin2srgb(np.mean(albedolib.srgb_to_linsrgb(albedo_pred / 255), axis=-1)) * 255).round().astype(np.uint8))
             if self.loss == "si":
@@ -434,6 +452,8 @@ class ShadingEvaluator(AlbedoEvaluator):
         self.ver = "ver2" #ver1: blur then shading. ver2: shading then masked blur
         pass
     def evaluate(self, gt_shading_path, pred_shading_path, mask_path, specular_mask_path, input_img_path, color_space, sigma_factor=1): # Input img for check over exposure
+        import compute_shading
+
         #WIDTH, HEIGHT = 320,240
         WIDTH = 320
         ORIG_SIGMA = 20

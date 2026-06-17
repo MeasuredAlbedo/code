@@ -1,20 +1,48 @@
 import csv
+import os
 import os.path
 import pathlib
+
+OUTPUT_ROOT = pathlib.Path(os.environ.get("MAW_OUTPUT_ROOT", "output")).expanduser()
+
+
+class ConfiguredPath(os.PathLike):
+    def __init__(self, env_name, default_subdir, description):
+        self.env_name = env_name
+        self.default_path = OUTPUT_ROOT / default_subdir
+        self.description = description
+
+    @property
+    def path(self):
+        return pathlib.Path(os.environ.get(self.env_name, self.default_path)).expanduser()
+
+    def __fspath__(self):
+        path = self.path
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Missing {self.description} directory: {path}. "
+                f"Create or mount it, or set {self.env_name}."
+            )
+        return str(path)
+
+    def __str__(self):
+        return os.fspath(self)
+
+
 class ALGORITHM_PATHS:
-    raise RuntimeError("missing path to algorithms")
-    IMGS_PATH = pathlib.Path()
-    OURS_PATH = pathlib.Path()
-    RAVI_PATH = pathlib.Path()
-    CGINTRINSICS_PATH = pathlib.Path()
-    BIGTIME_PATH = pathlib.Path()
-    SOUMYADIP_PATH = pathlib.Path()
-    USI3D_PATH = pathlib.Path()
-    REVISIT_PATH = pathlib.Path()
-    BELL2014_PATH = pathlib.Path()
-    NIID_PATH = pathlib.Path()
-    RETINEX_PATH = pathlib.Path()
-    NESTMEYER_PATH = pathlib.Path()
+    IMGS_PATH = ConfiguredPath("MAW_IMGS_PATH", "images", "MAW image")
+    OURS_PATH = ConfiguredPath("MAW_OURS_PATH", "ours", "ours output")
+    RAVI_PATH = ConfiguredPath("MAW_RAVI_PATH", "ravi", "Ravi output")
+    CGINTRINSICS_PATH = ConfiguredPath("MAW_CGINTRINSICS_PATH", "cgintrinsics", "CGIntrinsics output")
+    BIGTIME_PATH = ConfiguredPath("MAW_BIGTIME_PATH", "bigtime", "BigTime output")
+    SOUMYADIP_PATH = ConfiguredPath("MAW_SOUMYADIP_PATH", "soumyadip", "Soumyadip output")
+    USI3D_PATH = ConfiguredPath("MAW_USI3D_PATH", "usi3d", "USI3D output")
+    REVISIT_PATH = ConfiguredPath("MAW_REVISIT_PATH", "revisit", "Revisiting output")
+    BELL2014_PATH = ConfiguredPath("MAW_BELL2014_PATH", "bell2014", "Bell 2014 output")
+    NIID_PATH = ConfiguredPath("MAW_NIID_PATH", "niid", "NIID output")
+    RETINEX_PATH = ConfiguredPath("MAW_RETINEX_PATH", "retinex", "Retinex output")
+    NESTMEYER_PATH = ConfiguredPath("MAW_NESTMEYER_PATH", "nestmeyer", "Nestmeyer output")
+    L1TRANS_PATH = ConfiguredPath("MAW_L1TRANS_PATH", "l1trans", "L1 flattening output")
     pass
 
 class PathFinder:
@@ -140,14 +168,14 @@ class PathFinder:
         return path
 
     def get_l1trans_albedo(self):
-        path = os.path.join("/data/research/project/inverse_rendering_project/L1Flattening/ver6/", "{}_smooth.png".format(self.pred_name))
+        path = os.path.join(ALGORITHM_PATHS.L1TRANS_PATH, "{}_smooth.png".format(self.pred_name))
         return path
 
     def get_nestmeyer_albedo(self):
-        path = os.path.join("/data/research/project/inverse_rendering_project/reflectance-filtering/results_curr", "{}-r_color.png".format(self.pred_name))
+        path = os.path.join(ALGORITHM_PATHS.NESTMEYER_PATH, "{}-r_color.png".format(self.pred_name))
         return path, "srgb"
     def get_nestmeyer_filtered_albedo(self):
-        path = os.path.join("/data/research/project/inverse_rendering_project/reflectance-filtering/results_curr", "{}-r_guided_c3.0s45.0_color.png".format(self.pred_name))
+        path = os.path.join(ALGORITHM_PATHS.NESTMEYER_PATH, "{}-r_guided_c3.0s45.0_color.png".format(self.pred_name))
         return path, "srgb"
 
     # def get_flatten_albedo(self):
@@ -239,7 +267,7 @@ class PathFinder:
         return path, "srgb"
 
     def get_nestmeyer_shading(self): #questionable
-        path = os.path.join("/data/research/project/inverse_rendering_project/reflectance-filtering/results_curr", "{}-s_colorized.png".format(self.pred_name))
+        path = os.path.join(ALGORITHM_PATHS.NESTMEYER_PATH, "{}-s_colorized.png".format(self.pred_name))
         return path, "srgb"
 
     def get_soumyadip_shading(self):
@@ -302,4 +330,3 @@ class PathFinderMgr:
         pass
     
     pass
-

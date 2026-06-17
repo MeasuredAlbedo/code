@@ -1,0 +1,14 @@
+colour-science
+html4vision
+imageio
+lensfunpy
+largestinteriorrectangle
+lpips
+matplotlib
+numpy<2
+opencv-python-headless
+Pillow
+rawpy
+scikit-image
+scipy
+shapely
